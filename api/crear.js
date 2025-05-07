@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-const ADMIN_SECRET = 'mi_super_clave_admin';
+const ADMIN_SECRET = '782fce47075f47778191978eb0428a9b';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
