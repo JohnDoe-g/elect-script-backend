@@ -1,21 +1,30 @@
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
 
-const ADMIN_SECRET = '782fce47075f47778191978eb0428a9b';
+const filePath = path.resolve('./data/usuarios.json');
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
-
-  const { adminSecret, nuevoUsuario, nuevoToken } = req.body;
-  if (adminSecret !== ADMIN_SECRET) {
-    return res.status(403).json({ ok: false, error: 'No autorizado' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Método no permitido' });
   }
 
-  const filePath = path.resolve('data', 'usuarios.json');
-  const data = JSON.parse(await fs.readFile(filePath, 'utf-8'));
+  const { adminSecret, nuevoUsuario, nuevoToken } = req.body;
 
-  data[nuevoUsuario] = nuevoToken;
+  if (adminSecret !== process.env.ADMIN_SECRET) {
+    return res.status(403).json({ error: 'No autorizado' });
+  }
 
-  await fs.writeFile(filePath, JSON.stringify(data, null, 2));
-  res.json({ ok: true, mensaje: `Usuario '${nuevoUsuario}' creado.` });
+  try {
+    const usuarios = fs.existsSync(filePath)
+      ? JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+      : {};
+
+    usuarios[nuevoUsuario] = nuevoToken;
+
+    fs.writeFileSync(filePath, JSON.stringify(usuarios, null, 2));
+
+    return res.status(200).json({ mensaje: 'Usuario creado con éxito' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Error al guardar usuario' });
+  }
 }
