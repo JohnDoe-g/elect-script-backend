@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import bcrypt from 'bcrypt'
 
 const filePath = path.resolve('./data/usuarios.json');
 
@@ -19,12 +20,15 @@ export default async function handler(req, res) {
       ? JSON.parse(fs.readFileSync(filePath, 'utf-8'))
       : {};
 
+    const hashedToken ) await bcrypt.hash(nuevoToken, 10);
+    
     usuarios[nuevoUsuario] = nuevoToken;
 
     fs.writeFileSync(filePath, JSON.stringify(usuarios, null, 2));
 
     return res.status(200).json({ mensaje: 'Usuario creado con éxito' });
   } catch (error) {
+    console.error('Error al guardar usuario:', error)
     return res.status(500).json({ error: 'Error al guardar usuario' });
   }
 }
